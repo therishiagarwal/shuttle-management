@@ -28,4 +28,10 @@ public class TripController {
     public List<Trip> getStudentTrips(@PathVariable Long studentId) {
         return tripService.getTripsForStudent(studentId);
     }
+    
+    @GetMapping("/student/{studentId}/total-fare")
+public int getTotalFare(@PathVariable Long studentId) {
+    return tripService.getTotalFareSpentByStudent(studentId);
+}
+
 }

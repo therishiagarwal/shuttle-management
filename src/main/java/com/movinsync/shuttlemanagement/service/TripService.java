@@ -52,4 +52,12 @@ public class TripService {
     public List<Trip> getTripsForStudent(Long studentId) {
         return tripRepository.findByStudentId(studentId);
     }
+    
+    public int getTotalFareSpentByStudent(Long studentId) {
+    return tripRepository.findByStudentId(studentId)
+                         .stream()
+                         .mapToInt(Trip::getFare)
+                         .sum();
+}
+
 }
