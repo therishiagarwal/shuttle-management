@@ -18,4 +18,9 @@ public class Student {
 
     @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
+
+    public Student orElseThrow(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+    }
 }
