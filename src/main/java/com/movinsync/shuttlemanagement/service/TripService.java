@@ -13,11 +13,17 @@ public class TripService {
     private final TripRepository tripRepository;
     private final StudentRepository studentRepository;
     private final StopRepository stopRepository;
+    private final WalletRepository walletRepository; // ✅ Inject wallet repo
 
-    public TripService(TripRepository tripRepository, StudentRepository studentRepository, StopRepository stopRepository) {
+    public TripService(
+            TripRepository tripRepository,
+            StudentRepository studentRepository,
+            StopRepository stopRepository,
+            WalletRepository walletRepository) { // ✅ Add to constructor
         this.tripRepository = tripRepository;
         this.studentRepository = studentRepository;
         this.stopRepository = stopRepository;
+        this.walletRepository = walletRepository;
     }
 
     public Trip bookTrip(Long studentId, Long fromStopId, Long toStopId, int fare) {
@@ -34,9 +40,10 @@ public class TripService {
         Stop to = stopRepository.findById(toStopId)
                 .orElseThrow(() -> new RuntimeException("To Stop not found"));
 
-        // Deduct fare
-        student.getWallet().setBalance(student.getWallet().getBalance() - fare);
-        studentRepository.save(student);
+        // Deduct fare and persist wallet directly
+        Wallet wallet = student.getWallet();
+        wallet.setBalance(wallet.getBalance() - fare);
+        walletRepository.save(wallet); // ✅ Persist wallet update
 
         // Create trip
         Trip trip = new Trip();
@@ -52,12 +59,11 @@ public class TripService {
     public List<Trip> getTripsForStudent(Long studentId) {
         return tripRepository.findByStudentId(studentId);
     }
-    
-    public int getTotalFareSpentByStudent(Long studentId) {
-    return tripRepository.findByStudentId(studentId)
-                         .stream()
-                         .mapToInt(Trip::getFare)
-                         .sum();
-}
 
+    public int getTotalFareSpentByStudent(Long studentId) {
+        return tripRepository.findByStudentId(studentId)
+                .stream()
+                .mapToInt(Trip::getFare)
+                .sum();
+    }
 }

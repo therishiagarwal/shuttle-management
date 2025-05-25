@@ -15,6 +15,10 @@ public class Stop {
 
     private String name;
 
+    @Column(nullable = false)
     private double latitude;
+    
+    @Column(nullable = false)
     private double longitude;
+    
 }

@@ -25,7 +25,7 @@ public class Trip {
     private Stop toStop;
 
     @Column(name = "fare_used") // ✅ Match DB field used in SQL
-    private int fare;
+    private Integer  fare;
 
     @Column(name = "timestamp") // ✅ Match DB field used in SQL
     private LocalDateTime tripTime;
