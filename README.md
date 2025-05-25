@@ -30,6 +30,15 @@ A **Smart Campus Transit Solution** built using **Spring Boot**, offering shuttl
 - **Object-Oriented Architecture** (Services, Repositories, Controllers)
 
 ---
+## 🧭 System Architecture
+
+###  Class Diagram
+![Class Diagram](docs/class-diagram.png)
+
+
+###  Sequence Diagram
+![Sequence Diagram](docs/sequence-diagram.png)
+---
 
 ## 📦 API Endpoints
 
