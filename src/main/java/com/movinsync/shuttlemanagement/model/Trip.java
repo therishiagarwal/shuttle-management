@@ -24,7 +24,9 @@ public class Trip {
     @ManyToOne
     private Stop toStop;
 
+    @Column(name = "fare_used") // ✅ Match DB field used in SQL
     private int fare;
 
+    @Column(name = "timestamp") // ✅ Match DB field used in SQL
     private LocalDateTime tripTime;
 }
