@@ -36,3 +36,10 @@ build/
 /data/
 *.mv.db
 *.trace.db
+
+# Claude Code internal files
+.claude/
+
+# Assignment PDF (binary, not source code)
+*.pdf
+PROJECT_STATUS.md
