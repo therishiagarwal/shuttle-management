@@ -1,6 +1,8 @@
 package com.movinsync.shuttlemanagement.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.List;
@@ -15,8 +17,10 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Route name is required")
     private String routeName;
 
+    @NotEmpty(message = "Route must have at least one stop")
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
         name = "route_stops",
