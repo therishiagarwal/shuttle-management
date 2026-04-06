@@ -2,6 +2,7 @@ package com.movinsync.shuttlemanagement.service;
 
 import com.movinsync.shuttlemanagement.model.Student;
 import com.movinsync.shuttlemanagement.repository.StudentRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,36 +11,33 @@ import java.util.List;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public StudentService(StudentRepository repo) {
+    public StudentService(StudentRepository repo, PasswordEncoder passwordEncoder) {
         this.studentRepository = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Student createStudent(Student student) {
+        student.setPassword(passwordEncoder.encode(student.getPassword()));
         return studentRepository.save(student);
     }
 
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
-    //admin functionality to allocate and deduct points from student wallets
 
     public void allocatePoints(Long studentId, int points) {
-    Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        student.getWallet().setBalance(student.getWallet().getBalance() + points);
+        studentRepository.save(student);
+    }
 
-    int currentBalance = student.getWallet().getBalance();
-    student.getWallet().setBalance(currentBalance + points);
-    studentRepository.save(student);
-}
-
-public void deductPoints(Long studentId, int points) {
-    Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
-
-    int currentBalance = student.getWallet().getBalance();
-    student.getWallet().setBalance(currentBalance - points);
-    studentRepository.save(student);
-}
-
+    public void deductPoints(Long studentId, int points) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        student.getWallet().setBalance(student.getWallet().getBalance() - points);
+        studentRepository.save(student);
+    }
 }
