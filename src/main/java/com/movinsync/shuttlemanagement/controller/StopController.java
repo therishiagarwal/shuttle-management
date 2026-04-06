@@ -2,6 +2,7 @@ package com.movinsync.shuttlemanagement.controller;
 
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.service.StopService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class StopController {
     }
 
     @PostMapping
-    public Stop createStop(@RequestBody Stop stop) {
+    public Stop createStop(@Valid @RequestBody Stop stop) {
         return stopService.saveStop(stop);
     }
 

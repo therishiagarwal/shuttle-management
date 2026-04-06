@@ -2,6 +2,7 @@ package com.movinsync.shuttlemanagement.controller;
 
 import com.movinsync.shuttlemanagement.model.Route;
 import com.movinsync.shuttlemanagement.service.RouteService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class RouteController {
     }
 
     @PostMapping
-    public Route createRoute(@RequestBody Route route) {
+    public Route createRoute(@Valid @RequestBody Route route) {
         return routeService.saveRoute(route);
     }
 

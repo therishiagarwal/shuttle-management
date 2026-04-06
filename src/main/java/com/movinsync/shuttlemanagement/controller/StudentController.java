@@ -2,6 +2,7 @@ package com.movinsync.shuttlemanagement.controller;
 
 import com.movinsync.shuttlemanagement.model.Student;
 import com.movinsync.shuttlemanagement.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class StudentController {
     }
 
     @PostMapping
-    public Student register(@RequestBody Student student) {
+    public Student register(@Valid @RequestBody Student student) {
         return studentService.createStudent(student);
     }
 
