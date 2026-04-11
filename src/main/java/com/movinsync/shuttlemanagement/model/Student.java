@@ -28,6 +28,9 @@ public class Student {
     @JsonIgnore
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.STUDENT;
+
     @NotNull(message = "Wallet is required")
     @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
