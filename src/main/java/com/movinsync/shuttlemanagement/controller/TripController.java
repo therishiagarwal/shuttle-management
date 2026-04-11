@@ -19,19 +19,17 @@ public class TripController {
     @PostMapping("/book")
     public Trip bookTrip(@RequestParam Long studentId,
                          @RequestParam Long fromStopId,
-                         @RequestParam Long toStopId,
-                         @RequestParam int fare) {
-        return tripService.bookTrip(studentId, fromStopId, toStopId, fare);
+                         @RequestParam Long toStopId) {
+        return tripService.bookTrip(studentId, fromStopId, toStopId);
     }
 
     @GetMapping("/student/{studentId}")
     public List<Trip> getStudentTrips(@PathVariable Long studentId) {
         return tripService.getTripsForStudent(studentId);
     }
-    
-    @GetMapping("/student/{studentId}/total-fare")
-public int getTotalFare(@PathVariable Long studentId) {
-    return tripService.getTotalFareSpentByStudent(studentId);
-}
 
+    @GetMapping("/student/{studentId}/total-fare")
+    public int getTotalFare(@PathVariable Long studentId) {
+        return tripService.getTotalFareSpentByStudent(studentId);
+    }
 }
