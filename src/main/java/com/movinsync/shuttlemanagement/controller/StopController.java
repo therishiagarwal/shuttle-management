@@ -3,6 +3,7 @@ package com.movinsync.shuttlemanagement.controller;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.service.StopService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,5 +26,16 @@ public class StopController {
     @GetMapping
     public List<Stop> getAllStops() {
         return stopService.getAllStops();
+    }
+
+    @PutMapping("/{id}")
+    public Stop updateStop(@PathVariable Long id, @Valid @RequestBody Stop stop) {
+        return stopService.updateStop(id, stop);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStop(@PathVariable Long id) {
+        stopService.deleteStop(id);
+        return ResponseEntity.noContent().build();
     }
 }
