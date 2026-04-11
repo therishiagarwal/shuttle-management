@@ -40,7 +40,7 @@ public class AuthController {
         }
 
         Map<String, String> response = new HashMap<>();
-        response.put("token", jwtUtil.generateToken(student.getEmail()));
+        response.put("token", jwtUtil.generateToken(student.getEmail(), student.getRole().name()));
         return ResponseEntity.ok(response);
     }
 }

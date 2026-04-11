@@ -24,18 +24,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")  // Allow POSTs to H2
+                        .ignoringRequestMatchers("/h2-console/**")
                         .disable()
                 )
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin()) // Allow H2 console in iframe
+                        .frameOptions(frame -> frame.sameOrigin())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",     // ✅ Allow login/register
-                                "/h2-console/**"    // ✅ Allow H2 access
-                        ).permitAll()
-                        .anyRequest().authenticated() // ✅ All other endpoints require JWT
+                        .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
