@@ -1,6 +1,7 @@
 package com.movinsync.shuttlemanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.movinsync.shuttlemanagement.validation.UniversityEmail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +22,8 @@ public class Student {
     private String name;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
+    @Email(message = "Email must be a valid email address")
+    @UniversityEmail
     private String email;
 
     @NotBlank(message = "Password is required")
