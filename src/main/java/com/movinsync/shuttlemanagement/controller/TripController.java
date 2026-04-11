@@ -23,6 +23,12 @@ public class TripController {
         return tripService.bookTrip(studentId, fromStopId, toStopId);
     }
 
+    @DeleteMapping("/{tripId}/cancel")
+    public Trip cancelTrip(@PathVariable Long tripId,
+                           @RequestParam Long studentId) {
+        return tripService.cancelTrip(tripId, studentId);
+    }
+
     @GetMapping("/student/{studentId}")
     public List<Trip> getStudentTrips(@PathVariable Long studentId) {
         return tripService.getTripsForStudent(studentId);
