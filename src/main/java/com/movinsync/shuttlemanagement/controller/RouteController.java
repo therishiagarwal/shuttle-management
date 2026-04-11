@@ -3,6 +3,7 @@ package com.movinsync.shuttlemanagement.controller;
 import com.movinsync.shuttlemanagement.model.Route;
 import com.movinsync.shuttlemanagement.service.RouteService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,5 +26,26 @@ public class RouteController {
     @GetMapping
     public List<Route> getAllRoutes() {
         return routeService.getAllRoutes();
+    }
+
+    @PutMapping("/{id}")
+    public Route updateRoute(@PathVariable Long id, @Valid @RequestBody Route route) {
+        return routeService.updateRoute(id, route);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRoute(@PathVariable Long id) {
+        routeService.deleteRoute(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{routeId}/stops/{stopId}")
+    public Route addStop(@PathVariable Long routeId, @PathVariable Long stopId) {
+        return routeService.addStopToRoute(routeId, stopId);
+    }
+
+    @DeleteMapping("/{routeId}/stops/{stopId}")
+    public Route removeStop(@PathVariable Long routeId, @PathVariable Long stopId) {
+        return routeService.removeStopFromRoute(routeId, stopId);
     }
 }
