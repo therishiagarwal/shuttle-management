@@ -5,6 +5,8 @@ import com.movinsync.shuttlemanagement.model.Route;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.repository.RouteRepository;
 import com.movinsync.shuttlemanagement.repository.StopRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,6 +25,8 @@ import java.util.*;
  */
 @Service
 public class BusTransferService {
+
+    private static final Logger log = LoggerFactory.getLogger(BusTransferService.class);
 
     private final RouteRepository routeRepository;
     private final StopRepository stopRepository;
@@ -54,8 +58,14 @@ public class BusTransferService {
                 .filter(r -> containsStop(r, toStopId))
                 .toList();
 
-        if (leg1Routes.isEmpty()) throw new RuntimeException("No routes found from the source stop");
-        if (leg2Routes.isEmpty()) throw new RuntimeException("No routes found to the destination stop");
+        if (leg1Routes.isEmpty()) {
+            log.warn("No routes from source stop: fromStopId={}", fromStopId);
+            throw new RuntimeException("No routes found from the source stop");
+        }
+        if (leg2Routes.isEmpty()) {
+            log.warn("No routes to destination stop: toStopId={}", toStopId);
+            throw new RuntimeException("No routes found to the destination stop");
+        }
 
         // Find best transfer combination
         double bestDist = Double.MAX_VALUE;
@@ -86,6 +96,7 @@ public class BusTransferService {
         }
 
         if (bestTransferStop == null) {
+            log.warn("No transfer route found: fromStopId={}, toStopId={}", fromStopId, toStopId);
             throw new RuntimeException("No transfer route found between the selected stops");
         }
 
@@ -99,6 +110,9 @@ public class BusTransferService {
         int totalFare = calculatePathFare(fullPath);
         double totalDistKm = Math.round(bestDist * 100.0) / 100.0;
 
+        log.info("Transfer route found: fromStopId={}, toStopId={}, transferStop={}, leg1={}, leg2={}, fare={}",
+                fromStopId, toStopId, bestTransferStop.getName(),
+                bestLeg1Route.getRouteName(), bestLeg2Route.getRouteName(), totalFare);
         return new TransferResult(
                 fullPath,
                 bestTransferStop,
