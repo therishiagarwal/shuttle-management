@@ -1,7 +1,9 @@
 package com.movinsync.shuttlemanagement.controller;
 
 import com.movinsync.shuttlemanagement.dto.RouteOptimizationResult;
+import com.movinsync.shuttlemanagement.dto.TransferResult;
 import com.movinsync.shuttlemanagement.model.Route;
+import com.movinsync.shuttlemanagement.service.BusTransferService;
 import com.movinsync.shuttlemanagement.service.RouteOptimizationService;
 import com.movinsync.shuttlemanagement.service.RouteService;
 import jakarta.validation.Valid;
@@ -16,11 +18,14 @@ public class RouteController {
 
     private final RouteService routeService;
     private final RouteOptimizationService optimizationService;
+    private final BusTransferService busTransferService;
 
     public RouteController(RouteService routeService,
-                           RouteOptimizationService optimizationService) {
+                           RouteOptimizationService optimizationService,
+                           BusTransferService busTransferService) {
         this.routeService = routeService;
         this.optimizationService = optimizationService;
+        this.busTransferService = busTransferService;
     }
 
     @PostMapping
@@ -58,5 +63,11 @@ public class RouteController {
     public RouteOptimizationResult optimizeRoute(@RequestParam Long fromStopId,
                                                   @RequestParam Long toStopId) {
         return optimizationService.findOptimalPath(fromStopId, toStopId);
+    }
+
+    @GetMapping("/transfer")
+    public TransferResult findTransfer(@RequestParam Long fromStopId,
+                                       @RequestParam Long toStopId) {
+        return busTransferService.findBestTransfer(fromStopId, toStopId);
     }
 }
