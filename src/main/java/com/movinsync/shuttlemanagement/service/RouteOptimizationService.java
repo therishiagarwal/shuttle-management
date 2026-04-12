@@ -5,6 +5,8 @@ import com.movinsync.shuttlemanagement.model.Route;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.repository.RouteRepository;
 import com.movinsync.shuttlemanagement.repository.StopRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,6 +23,8 @@ import java.util.*;
  */
 @Service
 public class RouteOptimizationService {
+
+    private static final Logger log = LoggerFactory.getLogger(RouteOptimizationService.class);
 
     private final RouteRepository routeRepository;
     private final StopRepository stopRepository;
@@ -75,6 +79,7 @@ public class RouteOptimizationService {
         }
 
         if (!dist.containsKey(destination.getId())) {
+            log.warn("No route found between stops: fromStopId={}, toStopId={}", fromStopId, toStopId);
             throw new RuntimeException("No route found between the selected stops");
         }
 
@@ -84,6 +89,8 @@ public class RouteOptimizationService {
         double totalDistanceKm = dist.get(destination.getId());
         int    totalFare       = calculatePathFare(path);
 
+        log.info("Optimal path found: fromStopId={}, toStopId={}, stops={}, distanceKm={}, fare={}",
+                fromStopId, toStopId, path.size(), Math.round(totalDistanceKm * 100.0) / 100.0, totalFare);
         return new RouteOptimizationResult(path, totalFare, Math.round(totalDistanceKm * 100.0) / 100.0);
     }
 

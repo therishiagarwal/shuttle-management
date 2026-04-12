@@ -4,6 +4,8 @@ import com.movinsync.shuttlemanagement.dto.NearestStopResult;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.repository.RouteRepository;
 import com.movinsync.shuttlemanagement.repository.StopRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,7 @@ import java.util.List;
 @Service
 public class StopService {
 
+    private static final Logger log = LoggerFactory.getLogger(StopService.class);
     private static final double EARTH_RADIUS_METRES = 6_371_000.0;
 
     private final StopRepository stopRepository;
@@ -38,7 +41,9 @@ public class StopService {
 
     @CacheEvict(value = "stops", allEntries = true)
     public Stop saveStop(Stop stop) {
-        return stopRepository.save(stop);
+        Stop saved = stopRepository.save(stop);
+        log.info("Stop created: stopId={}, name={}", saved.getId(), saved.getName());
+        return saved;
     }
 
     @Cacheable("stops")
@@ -53,7 +58,9 @@ public class StopService {
         existing.setName(updated.getName());
         existing.setLatitude(updated.getLatitude());
         existing.setLongitude(updated.getLongitude());
-        return stopRepository.save(existing);
+        Stop saved = stopRepository.save(existing);
+        log.info("Stop updated: stopId={}, name={}", id, saved.getName());
+        return saved;
     }
 
     @CacheEvict(value = "stops", allEntries = true)
@@ -62,12 +69,14 @@ public class StopService {
             throw new RuntimeException("Stop not found");
         }
         if (routeRepository.existsByStopsId(id)) {
+            log.warn("Delete rejected - stop assigned to route: stopId={}", id);
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Stop is assigned to one or more routes and cannot be deleted"
             );
         }
         stopRepository.deleteById(id);
+        log.info("Stop deleted: stopId={}", id);
     }
 
     /**

@@ -5,6 +5,8 @@ import com.movinsync.shuttlemanagement.dto.ExpenseReportResult;
 import com.movinsync.shuttlemanagement.dto.FrequentRouteResult;
 import com.movinsync.shuttlemanagement.model.*;
 import com.movinsync.shuttlemanagement.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class TripService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripService.class);
 
     private final TripRepository tripRepository;
     private final StudentRepository studentRepository;
@@ -58,6 +62,8 @@ public class TripService {
         int finalFare     = fareCalculatorService.calculate(from, to, now);
 
         if (student.getWallet().getBalance() < finalFare) {
+            log.warn("Booking rejected - insufficient balance: studentId={}, required={}, available={}",
+                    studentId, finalFare, student.getWallet().getBalance());
             throw new RuntimeException("Insufficient wallet balance");
         }
 
@@ -74,6 +80,8 @@ public class TripService {
         trip.setStatus(TripStatus.BOOKED);
 
         Trip saved = tripRepository.save(trip);
+        log.info("Trip booked: tripId={}, studentId={}, from={}, to={}, fare={}, peak={}",
+                saved.getId(), studentId, from.getName(), to.getName(), finalFare, isPeak);
         return new BookingResult(saved, baseFare, finalFare, isPeak);
     }
 
@@ -85,9 +93,11 @@ public class TripService {
             throw new RuntimeException("You can only cancel your own trips");
         }
         if (trip.getStatus() == TripStatus.CANCELLED) {
+            log.warn("Cancel rejected - trip already cancelled: tripId={}", tripId);
             throw new RuntimeException("Trip is already cancelled");
         }
         if (trip.getStatus() == TripStatus.COMPLETED) {
+            log.warn("Cancel rejected - trip already completed: tripId={}", tripId);
             throw new RuntimeException("Completed trips cannot be cancelled");
         }
 
@@ -96,6 +106,9 @@ public class TripService {
             Wallet wallet = trip.getStudent().getWallet();
             wallet.setBalance(wallet.getBalance() + trip.getFare());
             walletRepository.save(wallet);
+            log.info("Full refund issued: tripId={}, amount={}, studentId={}", tripId, trip.getFare(), studentId);
+        } else {
+            log.info("Trip cancelled without refund: tripId={}, minutesSinceBooking={}", tripId, minutesSinceBooking);
         }
 
         trip.setStatus(TripStatus.CANCELLED);
