@@ -4,6 +4,8 @@ import com.movinsync.shuttlemanagement.model.Route;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.repository.RouteRepository;
 import com.movinsync.shuttlemanagement.repository.StopRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,14 +21,17 @@ public class RouteService {
         this.stopRepository = stopRepository;
     }
 
+    @CacheEvict(value = "routes", allEntries = true)
     public Route saveRoute(Route route) {
         return routeRepository.save(route);
     }
 
+    @Cacheable("routes")
     public List<Route> getAllRoutes() {
         return routeRepository.findAll();
     }
 
+    @CacheEvict(value = "routes", allEntries = true)
     public Route updateRoute(Long id, Route updated) {
         Route existing = routeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Route not found"));
@@ -35,6 +40,7 @@ public class RouteService {
         return routeRepository.save(existing);
     }
 
+    @CacheEvict(value = "routes", allEntries = true)
     public void deleteRoute(Long id) {
         if (!routeRepository.existsById(id)) {
             throw new RuntimeException("Route not found");
@@ -42,6 +48,7 @@ public class RouteService {
         routeRepository.deleteById(id);
     }
 
+    @CacheEvict(value = "routes", allEntries = true)
     public Route addStopToRoute(Long routeId, Long stopId) {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new RuntimeException("Route not found"));
@@ -55,6 +62,7 @@ public class RouteService {
         return routeRepository.save(route);
     }
 
+    @CacheEvict(value = "routes", allEntries = true)
     public Route removeStopFromRoute(Long routeId, Long stopId) {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new RuntimeException("Route not found"));
