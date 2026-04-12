@@ -1,5 +1,6 @@
 package com.movinsync.shuttlemanagement.controller;
 
+import com.movinsync.shuttlemanagement.dto.NearestStopResult;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.service.StopService;
 import jakarta.validation.Valid;
@@ -37,5 +38,13 @@ public class StopController {
     public ResponseEntity<Void> deleteStop(@PathVariable Long id) {
         stopService.deleteStop(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/nearest")
+    public List<NearestStopResult> getNearestStops(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(defaultValue = "3") int limit) {
+        return stopService.findNearestStops(lat, lng, limit);
     }
 }
