@@ -1,5 +1,6 @@
 package com.movinsync.shuttlemanagement.controller;
 
+import com.movinsync.shuttlemanagement.dto.BookingResult;
 import com.movinsync.shuttlemanagement.model.Trip;
 import com.movinsync.shuttlemanagement.service.TripService;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,9 @@ public class TripController {
     }
 
     @PostMapping("/book")
-    public Trip bookTrip(@RequestParam Long studentId,
-                         @RequestParam Long fromStopId,
-                         @RequestParam Long toStopId) {
+    public BookingResult bookTrip(@RequestParam Long studentId,
+                                  @RequestParam Long fromStopId,
+                                  @RequestParam Long toStopId) {
         return tripService.bookTrip(studentId, fromStopId, toStopId);
     }
 
