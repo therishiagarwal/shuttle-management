@@ -1,6 +1,7 @@
 package com.movinsync.shuttlemanagement.controller;
 
 import com.movinsync.shuttlemanagement.dto.BookingResult;
+import com.movinsync.shuttlemanagement.dto.ExpenseReportResult;
 import com.movinsync.shuttlemanagement.dto.FrequentRouteResult;
 import com.movinsync.shuttlemanagement.model.Trip;
 import com.movinsync.shuttlemanagement.service.TripService;
@@ -46,5 +47,12 @@ public class TripController {
             @PathVariable Long studentId,
             @RequestParam(defaultValue = "3") int limit) {
         return tripService.getFrequentRoutes(studentId, limit);
+    }
+
+    @GetMapping("/student/{studentId}/expense-report")
+    public ExpenseReportResult getExpenseReport(
+            @PathVariable Long studentId,
+            @RequestParam(defaultValue = "monthly") String period) {
+        return tripService.getExpenseReport(studentId, period);
     }
 }
