@@ -1,6 +1,7 @@
 package com.movinsync.shuttlemanagement.service;
 
 import com.movinsync.shuttlemanagement.dto.BookingResult;
+import com.movinsync.shuttlemanagement.dto.FrequentRouteResult;
 import com.movinsync.shuttlemanagement.model.*;
 import com.movinsync.shuttlemanagement.repository.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +10,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TripService {
@@ -104,5 +108,37 @@ public class TripService {
                 .stream()
                 .mapToInt(Trip::getFare)
                 .sum();
+    }
+
+    /**
+     * Returns top N most frequently booked (fromStop, toStop) pairs for a student,
+     * sorted descending by trip count.
+     *
+     * Time  : O(t log t) — t = student's trip count
+     * Space : O(k)       — k = distinct route pairs
+     */
+    public List<FrequentRouteResult> getFrequentRoutes(Long studentId, int limit) {
+        List<Trip> trips = tripRepository.findActiveByStudentId(studentId);
+
+        if (trips.isEmpty()) return List.of();
+
+        // Group by "fromStopName -> toStopName" key
+        Map<String, List<Trip>> grouped = trips.stream()
+                .collect(Collectors.groupingBy(t ->
+                        t.getFromStop().getName() + "|" + t.getToStop().getName()));
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    List<Trip> group   = entry.getValue();
+                    String[]   parts   = entry.getKey().split("\\|");
+                    LocalDateTime last = group.stream()
+                            .map(Trip::getTripTime)
+                            .max(Comparator.naturalOrder())
+                            .orElse(null);
+                    return new FrequentRouteResult(parts[0], parts[1], group.size(), last);
+                })
+                .sorted(Comparator.comparingLong(FrequentRouteResult::getTripCount).reversed())
+                .limit(limit)
+                .toList();
     }
 }
