@@ -1,6 +1,8 @@
 package com.movinsync.shuttlemanagement.controller;
 
+import com.movinsync.shuttlemanagement.dto.RouteOptimizationResult;
 import com.movinsync.shuttlemanagement.model.Route;
+import com.movinsync.shuttlemanagement.service.RouteOptimizationService;
 import com.movinsync.shuttlemanagement.service.RouteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +15,12 @@ import java.util.List;
 public class RouteController {
 
     private final RouteService routeService;
+    private final RouteOptimizationService optimizationService;
 
-    public RouteController(RouteService routeService) {
+    public RouteController(RouteService routeService,
+                           RouteOptimizationService optimizationService) {
         this.routeService = routeService;
+        this.optimizationService = optimizationService;
     }
 
     @PostMapping
@@ -47,5 +52,11 @@ public class RouteController {
     @DeleteMapping("/{routeId}/stops/{stopId}")
     public Route removeStop(@PathVariable Long routeId, @PathVariable Long stopId) {
         return routeService.removeStopFromRoute(routeId, stopId);
+    }
+
+    @GetMapping("/optimize")
+    public RouteOptimizationResult optimizeRoute(@RequestParam Long fromStopId,
+                                                  @RequestParam Long toStopId) {
+        return optimizationService.findOptimalPath(fromStopId, toStopId);
     }
 }
