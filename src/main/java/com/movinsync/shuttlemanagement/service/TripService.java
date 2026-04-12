@@ -1,14 +1,17 @@
 package com.movinsync.shuttlemanagement.service;
 
 import com.movinsync.shuttlemanagement.dto.BookingResult;
+import com.movinsync.shuttlemanagement.dto.ExpenseReportResult;
 import com.movinsync.shuttlemanagement.dto.FrequentRouteResult;
 import com.movinsync.shuttlemanagement.model.*;
 import com.movinsync.shuttlemanagement.repository.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -108,6 +111,55 @@ public class TripService {
                 .stream()
                 .mapToInt(Trip::getFare)
                 .sum();
+    }
+
+    /**
+     * Generates a weekly or monthly expense report for a student.
+     * period = "monthly" → current calendar month
+     * period = "weekly"  → last 7 days
+     */
+    public ExpenseReportResult getExpenseReport(Long studentId, String period) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        LocalDateTime from;
+        LocalDateTime to = LocalDateTime.now();
+        String label;
+
+        if ("weekly".equalsIgnoreCase(period)) {
+            from  = LocalDate.now().minusDays(6).atStartOfDay();
+            label = LocalDate.now().minusDays(6) + " to " + LocalDate.now();
+        } else {
+            from  = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+            label = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
+
+        final LocalDateTime start = from;
+
+        List<Trip> trips = tripRepository.findActiveByStudentId(studentId)
+                .stream()
+                .filter(t -> !t.getTripTime().isBefore(start) && !t.getTripTime().isAfter(to))
+                .toList();
+
+        int totalFare = trips.stream().mapToInt(Trip::getFare).sum();
+
+        List<ExpenseReportResult.TripSummary> summaries = trips.stream()
+                .map(t -> new ExpenseReportResult.TripSummary(
+                        t.getTripTime().toLocalDate().toString(),
+                        t.getFromStop().getName(),
+                        t.getToStop().getName(),
+                        t.getFare(),
+                        t.getStatus().name()
+                ))
+                .toList();
+
+        return new ExpenseReportResult(
+                label,
+                totalFare,
+                trips.size(),
+                student.getWallet().getBalance(),
+                summaries
+        );
     }
 
     /**
