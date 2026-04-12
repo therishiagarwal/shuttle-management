@@ -4,6 +4,8 @@ import com.movinsync.shuttlemanagement.dto.NearestStopResult;
 import com.movinsync.shuttlemanagement.model.Stop;
 import com.movinsync.shuttlemanagement.repository.RouteRepository;
 import com.movinsync.shuttlemanagement.repository.StopRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,14 +36,17 @@ public class StopService {
         this.routeRepository = routeRepository;
     }
 
+    @CacheEvict(value = "stops", allEntries = true)
     public Stop saveStop(Stop stop) {
         return stopRepository.save(stop);
     }
 
+    @Cacheable("stops")
     public List<Stop> getAllStops() {
         return stopRepository.findAll();
     }
 
+    @CacheEvict(value = "stops", allEntries = true)
     public Stop updateStop(Long id, Stop updated) {
         Stop existing = stopRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stop not found"));
@@ -51,6 +56,7 @@ public class StopService {
         return stopRepository.save(existing);
     }
 
+    @CacheEvict(value = "stops", allEntries = true)
     public void deleteStop(Long id) {
         if (!stopRepository.existsById(id)) {
             throw new RuntimeException("Stop not found");
