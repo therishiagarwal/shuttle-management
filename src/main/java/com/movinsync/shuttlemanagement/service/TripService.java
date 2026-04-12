@@ -1,11 +1,13 @@
 package com.movinsync.shuttlemanagement.service;
 
+import com.movinsync.shuttlemanagement.dto.BookingResult;
 import com.movinsync.shuttlemanagement.model.*;
 import com.movinsync.shuttlemanagement.repository.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class TripService {
         this.fareCalculatorService = fareCalculatorService;
     }
 
-    public Trip bookTrip(Long studentId, Long fromStopId, Long toStopId) {
+    public BookingResult bookTrip(Long studentId, Long fromStopId, Long toStopId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
@@ -43,25 +45,29 @@ public class TripService {
         Stop to = stopRepository.findById(toStopId)
                 .orElseThrow(() -> new RuntimeException("To Stop not found"));
 
-        int fare = fareCalculatorService.calculate(from, to);
+        LocalTime now     = LocalTime.now();
+        boolean isPeak    = fareCalculatorService.isPeakHour(now);
+        int baseFare      = fareCalculatorService.calculate(from, to, LocalTime.of(10, 0)); // off-peak base
+        int finalFare     = fareCalculatorService.calculate(from, to, now);
 
-        if (student.getWallet().getBalance() < fare) {
+        if (student.getWallet().getBalance() < finalFare) {
             throw new RuntimeException("Insufficient wallet balance");
         }
 
         Wallet wallet = student.getWallet();
-        wallet.setBalance(wallet.getBalance() - fare);
+        wallet.setBalance(wallet.getBalance() - finalFare);
         walletRepository.save(wallet);
 
         Trip trip = new Trip();
         trip.setStudent(student);
         trip.setFromStop(from);
         trip.setToStop(to);
-        trip.setFare(fare);
+        trip.setFare(finalFare);
         trip.setTripTime(LocalDateTime.now());
         trip.setStatus(TripStatus.BOOKED);
 
-        return tripRepository.save(trip);
+        Trip saved = tripRepository.save(trip);
+        return new BookingResult(saved, baseFare, finalFare, isPeak);
     }
 
     public Trip cancelTrip(Long tripId, Long studentId) {
@@ -71,24 +77,19 @@ public class TripService {
         if (!trip.getStudent().getId().equals(studentId)) {
             throw new RuntimeException("You can only cancel your own trips");
         }
-
         if (trip.getStatus() == TripStatus.CANCELLED) {
             throw new RuntimeException("Trip is already cancelled");
         }
-
         if (trip.getStatus() == TripStatus.COMPLETED) {
             throw new RuntimeException("Completed trips cannot be cancelled");
         }
 
         long minutesSinceBooking = ChronoUnit.MINUTES.between(trip.getTripTime(), LocalDateTime.now());
-
         if (minutesSinceBooking <= fullRefundMinutes) {
-            // Full refund
             Wallet wallet = trip.getStudent().getWallet();
             wallet.setBalance(wallet.getBalance() + trip.getFare());
             walletRepository.save(wallet);
         }
-        // No refund if cancelled after the window — fare is forfeited
 
         trip.setStatus(TripStatus.CANCELLED);
         return tripRepository.save(trip);
